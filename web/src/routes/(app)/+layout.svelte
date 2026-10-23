@@ -60,6 +60,13 @@
 				<a class:activo={activo('/justificaciones')} href="/justificaciones">Justificaciones</a>
 				<a class:activo={activo('/estudiantes')} href="/estudiantes">Estudiantes</a>
 				<a class:activo={activo('/apoderados')} href="/apoderados">Apoderados</a>
+				{#if me.rol === 'ADMINISTRADOR' || me.rol === 'AUXILIAR'}
+					<a class:activo={activo('/reportes')} href="/reportes">Reportes</a>
+				{/if}
+				{#if me.rol === 'ADMINISTRADOR'}
+					<a class:activo={activo('/configuracion')} href="/configuracion">Configuración</a>
+					<a class:activo={activo('/auditoria')} href="/auditoria">Auditoría</a>
+				{/if}
 			</nav>
 
 			<div class="usuario">

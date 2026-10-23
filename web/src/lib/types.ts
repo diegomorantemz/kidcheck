@@ -170,3 +170,102 @@ export interface JustificacionPublica {
 	motivos: string[];
 	yaEnviada: boolean;
 }
+
+export interface ReporteDiarioResumen {
+	total: number;
+	presentes: number;
+	tarde: number;
+	ausentes: number;
+	justificados: number;
+	pendientes: number;
+	alertas: number;
+	porcentajeAsistencia: number;
+}
+
+export interface ReporteDiarioSeccion {
+	id: number;
+	nombre: string;
+	total: number;
+	presentes: number;
+	tarde: number;
+	ausentes: number;
+	justificados: number;
+	pendientes: number;
+	porcentajeAsistencia: number;
+}
+
+export interface ReporteDiario {
+	fecha: string;
+	generadoEn: string;
+	resumen: ReporteDiarioResumen;
+	secciones: ReporteDiarioSeccion[];
+}
+
+export interface ReporteMensualResumen {
+	estudiantes: number;
+	diasRegistrados: number;
+	diasPresente: number;
+	diasTarde: number;
+	diasAusente: number;
+	diasJustificado: number;
+	inasistencias: number;
+	reincidencias: number;
+	porcentajeAsistencia: number;
+}
+
+export interface ReporteMensualSeccion {
+	id: number;
+	nombre: string;
+	estudiantes: number;
+	diasRegistrados: number;
+	diasPresente: number;
+	diasAusente: number;
+	porcentajeAsistencia: number;
+}
+
+export interface ReporteMensualFila {
+	idEstudiante: number;
+	codigoMatricula: string;
+	nombre: string;
+	idSeccion: number;
+	seccion: string;
+	diasRegistrados: number;
+	diasPresente: number;
+	diasTarde: number;
+	diasAusente: number;
+	diasJustificado: number;
+	porcentajeAsistencia: number;
+	inasistencias: number;
+	reincidencias: number;
+}
+
+export interface ReporteMensual {
+	periodo: string;
+	generadoEn: string;
+	resumen: ReporteMensualResumen;
+	secciones: ReporteMensualSeccion[];
+	estudiantes: ReporteMensualFila[];
+}
+
+export interface Auditoria {
+	id: number;
+	fecha: string;
+	idUsuario?: number | null;
+	usuario?: string | null;
+	entidad: string;
+	idEntidad?: number | null;
+	accion: string;
+	datos?: Record<string, unknown> | null;
+	ip?: string | null;
+}
+
+export interface Configuracion {
+	clave: string;
+	valor: string;
+}
+
+export interface CalendarioDia {
+	fecha: string;
+	esLaborable: boolean;
+	descripcion?: string | null;
+}
