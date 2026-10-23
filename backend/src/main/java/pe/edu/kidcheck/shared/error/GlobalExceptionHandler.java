@@ -2,10 +2,12 @@ package pe.edu.kidcheck.shared.error;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -35,6 +37,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ProblemDetail> handleMalformedJson(HttpMessageNotReadableException ex) {
         return build(HttpStatus.BAD_REQUEST, "JSON_INVALIDO", "Cuerpo inválido",
                 "El cuerpo de la petición no es un JSON válido para este recurso.");
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleAccessDenied(AccessDeniedException ex) {
+        return build(HttpStatus.FORBIDDEN, "SIN_PERMISO", "Acceso denegado",
+                "Tu rol no tiene permiso para esta operación.");
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ProblemDetail> handleDataIntegrity(DataIntegrityViolationException ex) {
+        log.warn("Conflicto de datos: {}", ex.getMostSpecificCause().getMessage());
+        return build(HttpStatus.CONFLICT, "CONFLICTO_DATOS", "Conflicto de datos",
+                "La operación entra en conflicto con datos existentes.");
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,0 +1,254 @@
+:root {
+	--kc-green: #198754;
+	--kc-green-dark: #126b40;
+	--kc-green-light: #e5f5eb;
+	--kc-bg: #f3f6f4;
+	--kc-surface: #ffffff;
+	--kc-text: #26352e;
+	--kc-muted: #718078;
+	--kc-border: #e3ebe5;
+	--kc-danger: #b42318;
+	--kc-danger-light: #fdecea;
+	--kc-warn: #9a6700;
+	--kc-warn-light: #fff4d6;
+	--kc-radius: 16px;
+	--kc-shadow: 0 8px 28px rgba(30, 60, 40, 0.07);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	background: var(--kc-bg);
+	color: var(--kc-text);
+	font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+	font-size: 15px;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+	margin: 0;
+	line-height: 1.2;
+	letter-spacing: -0.015em;
+}
+
+a {
+	color: var(--kc-green-dark);
+}
+
+/* ---------- Botones ---------- */
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: 10px 16px;
+	border: 1px solid transparent;
+	border-radius: 11px;
+	font: inherit;
+	font-weight: 600;
+	text-decoration: none;
+	cursor: pointer;
+	transition: background 0.15s, border-color 0.15s, transform 0.05s;
+	white-space: nowrap;
+}
+
+.btn:active {
+	transform: translateY(1px);
+}
+
+.btn:disabled {
+	opacity: 0.55;
+	cursor: not-allowed;
+}
+
+.btn-primary {
+	background: var(--kc-green);
+	color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+	background: var(--kc-green-dark);
+}
+
+.btn-ghost {
+	background: transparent;
+	color: var(--kc-text);
+	border-color: var(--kc-border);
+}
+
+.btn-ghost:hover:not(:disabled) {
+	background: var(--kc-green-light);
+}
+
+.btn-danger {
+	background: var(--kc-danger-light);
+	color: var(--kc-danger);
+}
+
+.btn-danger:hover:not(:disabled) {
+	background: #f9d7d3;
+}
+
+.btn-sm {
+	padding: 6px 11px;
+	font-size: 13px;
+	border-radius: 9px;
+}
+
+/* ---------- Formularios ---------- */
+
+.field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.label {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--kc-muted);
+}
+
+.input,
+.select {
+	width: 100%;
+	padding: 10px 12px;
+	border: 1px solid var(--kc-border);
+	border-radius: 10px;
+	background: #fff;
+	color: var(--kc-text);
+	font: inherit;
+}
+
+.input:focus,
+.select:focus {
+	outline: 2px solid rgba(25, 135, 84, 0.25);
+	border-color: var(--kc-green);
+}
+
+.check {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 14px;
+}
+
+/* ---------- Tarjetas y estructura ---------- */
+
+.card {
+	background: var(--kc-surface);
+	border: 1px solid var(--kc-border);
+	border-radius: var(--kc-radius);
+	box-shadow: var(--kc-shadow);
+}
+
+.page-header {
+	display: flex;
+	align-items: flex-end;
+	justify-content: space-between;
+	gap: 16px;
+	flex-wrap: wrap;
+	margin-bottom: 20px;
+}
+
+.page-header p {
+	margin: 6px 0 0;
+	color: var(--kc-muted);
+}
+
+.badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 3px 9px;
+	border-radius: 999px;
+	font-size: 12px;
+	font-weight: 600;
+	background: var(--kc-green-light);
+	color: var(--kc-green-dark);
+}
+
+.badge.off {
+	background: #eef1ef;
+	color: var(--kc-muted);
+}
+
+.badge.warn {
+	background: var(--kc-warn-light);
+	color: var(--kc-warn);
+}
+
+/* ---------- Tablas ---------- */
+
+.table-wrap {
+	overflow-x: auto;
+}
+
+.table {
+	width: 100%;
+	border-collapse: collapse;
+	min-width: 720px;
+}
+
+.table th,
+.table td {
+	padding: 13px 16px;
+	text-align: left;
+	border-bottom: 1px solid var(--kc-border);
+	vertical-align: middle;
+}
+
+.table th {
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--kc-muted);
+	background: #fafcfa;
+}
+
+.table tbody tr:hover {
+	background: #fafcfa;
+}
+
+.table tbody tr:last-child td {
+	border-bottom: none;
+}
+
+.muted {
+	color: var(--kc-muted);
+}
+
+.small {
+	font-size: 13px;
+}
+
+.acciones {
+	display: flex;
+	gap: 8px;
+	justify-content: flex-end;
+}
+
+.alerta {
+	padding: 12px 14px;
+	border-radius: 11px;
+	background: var(--kc-danger-light);
+	color: var(--kc-danger);
+	font-size: 14px;
+}
+
+.alerta.ok {
+	background: var(--kc-green-light);
+	color: var(--kc-green-dark);
+}

@@ -79,7 +79,7 @@ CREATE TABLE calendario_escolar (
   id_calendario BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   id_colegio    BIGINT UNSIGNED NOT NULL,
   fecha         DATE NOT NULL,
-  es_laborable  TINYINT(1) NOT NULL DEFAULT 1,
+  es_laborable  TINYINT NOT NULL DEFAULT 1,
   descripcion   VARCHAR(100) NULL,
   UNIQUE KEY uq_calendario (id_colegio, fecha),
   CONSTRAINT fk_calendario_colegio FOREIGN KEY (id_colegio) REFERENCES colegio(id_colegio)
@@ -143,8 +143,8 @@ CREATE TABLE estudiante_apoderado (
   id_apoderado       BIGINT UNSIGNED NOT NULL,
   parentesco         VARCHAR(15) NOT NULL
                      CHECK (parentesco IN ('padre','madre','apoderado','otro')),
-  es_principal       TINYINT(1) NOT NULL DEFAULT 0,
-  autorizado_recoger TINYINT(1) NOT NULL DEFAULT 1,
+  es_principal       TINYINT NOT NULL DEFAULT 0,
+  autorizado_recoger TINYINT NOT NULL DEFAULT 1,
   PRIMARY KEY (id_estudiante, id_apoderado),
   CONSTRAINT fk_ea_estudiante FOREIGN KEY (id_estudiante) REFERENCES estudiante(id_estudiante),
   CONSTRAINT fk_ea_apoderado  FOREIGN KEY (id_apoderado)  REFERENCES apoderado(id_apoderado)

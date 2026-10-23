@@ -22,8 +22,6 @@ spring:
       ddl-auto: validate
     properties:
       hibernate:
-        jdbc:
-          time_zone: UTC
         format_sql: false
 
   flyway:
