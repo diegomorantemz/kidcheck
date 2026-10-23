@@ -1,0 +1,192 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "80c871262ff83aa3342484d1a42222ea",
+    "entities": [
+      {
+        "tableName": "roster",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`idEstudiante` INTEGER NOT NULL, `codigoMatricula` TEXT NOT NULL, `nombres` TEXT NOT NULL, `apellidos` TEXT NOT NULL, `tokenHash` TEXT NOT NULL, `seccion` TEXT NOT NULL, `horaLimite` TEXT, PRIMARY KEY(`idEstudiante`))",
+        "fields": [
+          {
+            "fieldPath": "idEstudiante",
+            "columnName": "idEstudiante",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "codigoMatricula",
+            "columnName": "codigoMatricula",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombres",
+            "columnName": "nombres",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "apellidos",
+            "columnName": "apellidos",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "tokenHash",
+            "columnName": "tokenHash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seccion",
+            "columnName": "seccion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "horaLimite",
+            "columnName": "horaLimite",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "idEstudiante"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_roster_tokenHash",
+            "unique": true,
+            "columnNames": [
+              "tokenHash"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_roster_tokenHash` ON `${TABLE_NAME}` (`tokenHash`)"
+          }
+        ]
+      },
+      {
+        "tableName": "cola_ingreso",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`clientId` TEXT NOT NULL, `idEstudiante` INTEGER NOT NULL, `nombre` TEXT NOT NULL, `seccion` TEXT NOT NULL, `fechaHoraUtc` INTEGER NOT NULL, `canal` TEXT NOT NULL, `motivo` TEXT, `estado` TEXT NOT NULL, `creadoEn` INTEGER NOT NULL, `error` TEXT, PRIMARY KEY(`clientId`))",
+        "fields": [
+          {
+            "fieldPath": "clientId",
+            "columnName": "clientId",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "idEstudiante",
+            "columnName": "idEstudiante",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "seccion",
+            "columnName": "seccion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fechaHoraUtc",
+            "columnName": "fechaHoraUtc",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "canal",
+            "columnName": "canal",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "motivo",
+            "columnName": "motivo",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "estado",
+            "columnName": "estado",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "creadoEn",
+            "columnName": "creadoEn",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "error",
+            "columnName": "error",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "clientId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_cola_ingreso_idEstudiante_fechaHoraUtc",
+            "unique": false,
+            "columnNames": [
+              "idEstudiante",
+              "fechaHoraUtc"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cola_ingreso_idEstudiante_fechaHoraUtc` ON `${TABLE_NAME}` (`idEstudiante`, `fechaHoraUtc`)"
+          },
+          {
+            "name": "index_cola_ingreso_estado",
+            "unique": false,
+            "columnNames": [
+              "estado"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_cola_ingreso_estado` ON `${TABLE_NAME}` (`estado`)"
+          }
+        ]
+      },
+      {
+        "tableName": "sync_state",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`clave` TEXT NOT NULL, `valor` TEXT NOT NULL, PRIMARY KEY(`clave`))",
+        "fields": [
+          {
+            "fieldPath": "clave",
+            "columnName": "clave",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "valor",
+            "columnName": "valor",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "clave"
+          ]
+        }
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '80c871262ff83aa3342484d1a42222ea')"
+    ]
+  }
+}
