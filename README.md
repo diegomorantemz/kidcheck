@@ -11,7 +11,10 @@ kidcheck/
 ├─ backend/    API REST (Spring Boot 3.5, Java 17, MySQL 8, Flyway)
 ├─ web/        Panel (SvelteKit 2 + Svelte 5, SPA con BFF de cookies httpOnly)
 ├─ android/    App de portería (Kotlin + Compose, offline-first)
-└─ docker-compose.yml
+├─ tests/k6/   Pruebas de carga
+├─ docs/       Guion de demo, pruebas y despliegue
+├─ docker-compose.yml
+└─ Makefile
 ```
 
 ## Arranque rápido con Docker
@@ -23,12 +26,22 @@ docker compose up --build
 > Si Docker responde `permission denied` al conectar con `/var/run/docker.sock`,
 > agrega tu usuario al grupo `docker` y vuelve a iniciar sesión:
 > `sudo usermod -aG docker $USER`.
+>
+> Si ya tienes un MySQL local en el puerto 3306, crea un `.env` con
+> `DB_PORT=3307` (o cambia el puerto en tu `.env`) antes de levantar Compose.
+
+La primera construcción descarga imágenes y dependencias; puede tardar varios
+minutos. Comprueba el estado con `docker compose ps` y los logs con
+`docker compose logs -f api`.
 
 - Panel: <http://localhost:5173>
 - API: <http://localhost:8080>
 - Swagger: <http://localhost:8080/swagger-ui.html>
 
 Usuario demo: `admin1` · contraseña `KidCheck2026!`
+
+También puedes usar los atajos del `Makefile`: `make up`, `make logs`,
+`make backend-test`, `make android-test`, `make e2e`, `make k6` y `make demo`.
 
 ## Arranque local (sin Docker)
 
@@ -86,7 +99,7 @@ es posible, usa la búsqueda manual: el flujo offline y la cola son los mismos.
 | `auxiliar1` | auxiliar | `KidCheck2026!` |
 | `psicologo1` | psicólogo | `KidCheck2026!` |
 
-## Flujo de la demo (S2 → S5)
+## Flujo de la demo (S2 → S6)
 
 1. Entrar al panel con `admin1`.
 2. **Apoderados** → registrar un contacto familiar (teléfono con código de país).
@@ -180,6 +193,30 @@ curl -s -X POST localhost:8080/api/v1/ingresos \
 
 En Docker también puedes cambiar los puertos publicados con `API_PORT`,
 `WEB_PORT` y `DB_PORT` (ver `.env.example`).
+
+## Pruebas
+
+Requiere Docker para MySQL/Testcontainers y para los servicios del panel.
+
+```bash
+# Backend: 13 tests (unitarios + integración con MySQL 8.4)
+cd backend && mvn test
+
+# Panel: 11 pruebas E2E con Playwright
+docker compose up -d --build
+cd web && npx playwright install chromium && npm run test:e2e
+
+# Carga: 20 req/s al panel y 50 req/s al sync (k6)
+make k6
+
+# Android: hash QR compartido con el backend
+make android-test
+```
+
+La guía completa, incluidos los resultados medidos y el checklist manual, está
+en [`docs/TESTING.md`](docs/TESTING.md). El guion cronometrado para la
+sustentación está en [`docs/DEMO.md`](docs/DEMO.md). Las notas de despliegue
+local y VPS con HTTPS están en [`docs/DEPLOY.md`](docs/DEPLOY.md).
 
 ## Decisiones clave
 
