@@ -10,6 +10,7 @@ import pe.edu.kidcheck.apoderado.EstudianteApoderado;
 import pe.edu.kidcheck.apoderado.EstudianteApoderadoRepository;
 import pe.edu.kidcheck.asistencia.AsistenciaDia;
 import pe.edu.kidcheck.asistencia.AsistenciaDiaRepository;
+import pe.edu.kidcheck.auditoria.AuditoriaService;
 import pe.edu.kidcheck.justificacion.dto.EnviarJustificacionRequest;
 import pe.edu.kidcheck.justificacion.dto.JustificacionDto;
 import pe.edu.kidcheck.justificacion.dto.JustificacionPublicaResponse;
@@ -22,6 +23,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +37,7 @@ public class JustificacionService {
     private final TokenJustificacionRepository tokens;
     private final AsistenciaDiaRepository asistencias;
     private final EstudianteApoderadoRepository vinculos;
+    private final AuditoriaService auditoria;
     private final CurrentUser actual;
 
     /** Crea un token de un solo uso, válido 72 h, y devuelve el valor en claro. */
@@ -149,6 +152,12 @@ public class JustificacionService {
                 asistencias.save(asistencia);
             }
         }
+
+        auditoria.registrar("justificacion", justificacion.getId(),
+                aprobar ? "aprobar" : "rechazar",
+                Map.of("idAlerta", justificacion.getAlerta().getId(),
+                        "motivo", justificacion.getMotivo(),
+                        "estado", justificacion.getEstado()));
 
         return aDto(justificacion);
     }

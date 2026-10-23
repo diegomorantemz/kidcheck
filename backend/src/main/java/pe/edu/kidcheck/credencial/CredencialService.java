@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pe.edu.kidcheck.auditoria.AuditoriaService;
 import pe.edu.kidcheck.credencial.dto.CredencialEmitidaResponse;
 import pe.edu.kidcheck.estudiante.Estudiante;
 import pe.edu.kidcheck.estudiante.EstudianteRepository;
@@ -15,6 +16,7 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.Base64;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class CredencialService {
     private final EstudianteRepository estudiantes;
     private final CredencialQrRepository credenciales;
     private final QrService qrService;
+    private final AuditoriaService auditoria;
     private final CurrentUser actual;
 
     /**
@@ -54,6 +57,10 @@ public class CredencialService {
 
         String pngBase64 = Base64.getEncoder().encodeToString(qrService.png(token, LADO_QR));
 
+        // Nunca se audita el token en claro: solo el identificador de la credencial.
+        auditoria.registrar("credencial", credencial.getId(), "emitir",
+                Map.of("idEstudiante", estudiante.getId(), "estado", "activa"));
+
         return new CredencialEmitidaResponse(
                 credencial.getId(),
                 estudiante.getId(),
@@ -73,6 +80,9 @@ public class CredencialService {
             credencial.setEstado("revocada");
             credencial.setRevocadaEn(LocalDateTime.now(ZoneOffset.UTC));
             credenciales.save(credencial);
+            auditoria.registrar("credencial", credencial.getId(), "revocar",
+                    Map.of("idEstudiante", credencial.getEstudiante().getId(),
+                            "estado", "revocada"));
         }
     }
 

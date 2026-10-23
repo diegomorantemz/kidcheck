@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.kidcheck.apoderado.ApoderadoService;
 import pe.edu.kidcheck.apoderado.dto.VinculoDto;
+import pe.edu.kidcheck.auditoria.AuditoriaService;
 import pe.edu.kidcheck.colegio.ColegioRepository;
 import pe.edu.kidcheck.credencial.CredencialQrRepository;
 import pe.edu.kidcheck.estudiante.dto.EstudianteDto;
@@ -20,6 +21,7 @@ import pe.edu.kidcheck.shared.web.PageResponse;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -31,6 +33,7 @@ public class EstudianteService {
     private final ColegioRepository colegios;
     private final ApoderadoService apoderados;
     private final CredencialQrRepository credenciales;
+    private final AuditoriaService auditoria;
     private final CurrentUser actual;
 
     @Transactional(readOnly = true)
@@ -71,6 +74,10 @@ public class EstudianteService {
         matricular(estudiante, request.seccionId());
         apoderados.reemplazarVinculos(estudiante, request.apoderados());
 
+        auditoria.registrar("estudiante", estudiante.getId(), "crear",
+                Map.of("codigoMatricula", estudiante.getCodigoMatricula(),
+                        "seccionId", request.seccionId()));
+
         return toDto(estudiante);
     }
 
@@ -94,6 +101,10 @@ public class EstudianteService {
         if (request.apoderados() != null) {
             apoderados.reemplazarVinculos(estudiante, request.apoderados());
         }
+
+        auditoria.registrar("estudiante", estudiante.getId(), "actualizar",
+                Map.of("codigoMatricula", estudiante.getCodigoMatricula(),
+                        "estado", estudiante.getEstado()));
 
         return toDto(estudiante);
     }

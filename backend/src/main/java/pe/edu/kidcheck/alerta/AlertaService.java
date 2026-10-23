@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pe.edu.kidcheck.alerta.dto.AlertaDto;
 import pe.edu.kidcheck.alerta.dto.DerivarRequest;
 import pe.edu.kidcheck.asistencia.AsistenciaDia;
+import pe.edu.kidcheck.auditoria.AuditoriaService;
 import pe.edu.kidcheck.justificacion.Justificacion;
 import pe.edu.kidcheck.justificacion.JustificacionRepository;
 import pe.edu.kidcheck.notificacion.NotificacionService;
@@ -17,6 +18,7 @@ import pe.edu.kidcheck.shared.time.Tiempo;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +27,7 @@ public class AlertaService {
     private final AlertaRepository alertas;
     private final JustificacionRepository justificaciones;
     private final NotificacionService notificaciones;
+    private final AuditoriaService auditoria;
     private final CurrentUser actual;
 
     public List<AlertaDto> listar(String estado, LocalDate fecha) {
@@ -43,6 +46,9 @@ public class AlertaService {
         alerta.setEstado("atendida");
         alerta.setUsuarioAtencionId(actual.usuarioId());
         alerta.setFechaAtencion(Tiempo.ahoraUtc());
+        auditoria.registrar("alerta", alerta.getId(), "atender",
+                Map.of("idEstudiante", alerta.getEstudiante().getId(),
+                        "estado", "atendida"));
         return aDto(alerta);
     }
 
@@ -56,6 +62,9 @@ public class AlertaService {
         String comentario = request == null || request.comentario() == null
                 || request.comentario().isBlank() ? "Sin comentario" : request.comentario().trim();
         notificaciones.encolarDerivacion(alerta, comentario);
+        auditoria.registrar("alerta", alerta.getId(), "derivar",
+                Map.of("idEstudiante", alerta.getEstudiante().getId(),
+                        "estado", "atendida"));
         return aDto(alerta);
     }
 

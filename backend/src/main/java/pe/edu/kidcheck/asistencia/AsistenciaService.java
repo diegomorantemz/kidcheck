@@ -10,6 +10,7 @@ import pe.edu.kidcheck.apoderado.EstudianteApoderado;
 import pe.edu.kidcheck.apoderado.EstudianteApoderadoRepository;
 import pe.edu.kidcheck.asistencia.dto.AsistenciaDto;
 import pe.edu.kidcheck.asistencia.dto.JustificarRequest;
+import pe.edu.kidcheck.auditoria.AuditoriaService;
 import pe.edu.kidcheck.justificacion.Justificacion;
 import pe.edu.kidcheck.justificacion.JustificacionRepository;
 import pe.edu.kidcheck.shared.error.ApiException;
@@ -31,6 +32,7 @@ public class AsistenciaService {
     private final AlertaRepository alertas;
     private final JustificacionRepository justificaciones;
     private final EstudianteApoderadoRepository vinculos;
+    private final AuditoriaService auditoria;
     private final CurrentUser actual;
 
     public List<AsistenciaDto> listar(LocalDate fecha, Long seccionId, String estado) {
@@ -103,6 +105,11 @@ public class AsistenciaService {
                 justificaciones.save(justificacion);
             }
         });
+
+        auditoria.registrar("asistencia", asistencia.getId(), "justificar_manual",
+                Map.of("idEstudiante", asistencia.getEstudiante().getId(),
+                        "motivo", request.motivo(),
+                        "estado", "justificado"));
 
         return new AsistenciaDto(asistencia.getId(), asistencia.getEstudiante().getId(),
                 asistencia.getEstudiante().nombreCompleto(), asistencia.getSeccion().nombre(),

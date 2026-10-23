@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.edu.kidcheck.calendario.dto.CalendarioDiaDto;
 import pe.edu.kidcheck.calendario.dto.CalendarioDiaRequest;
+import pe.edu.kidcheck.auditoria.AuditoriaService;
 import pe.edu.kidcheck.colegio.Colegio;
 import pe.edu.kidcheck.colegio.ColegioRepository;
 import pe.edu.kidcheck.shared.error.ApiException;
@@ -14,6 +15,7 @@ import pe.edu.kidcheck.shared.time.Tiempo;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,7 @@ public class CalendarioService {
 
     private final CalendarioEscolarRepository calendario;
     private final ColegioRepository colegios;
+    private final AuditoriaService auditoria;
     private final CurrentUser actual;
 
     public List<CalendarioDiaDto> listar(Integer anio) {
@@ -50,6 +53,9 @@ public class CalendarioService {
         dia.setEsLaborable((byte) (request.esLaborable() ? 1 : 0));
         dia.setDescripcion(request.descripcion());
         calendario.save(dia);
+        auditoria.registrar("calendario", null, "actualizar",
+                Map.of("fecha", fecha.toString(),
+                        "esLaborable", request.esLaborable()));
         return new CalendarioDiaDto(dia.getFecha(), dia.laborable(), dia.getDescripcion());
     }
 }

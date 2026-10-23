@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.RestController;
 import pe.edu.kidcheck.configuracion.dto.ConfiguracionDto;
 import pe.edu.kidcheck.colegio.Colegio;
 import pe.edu.kidcheck.colegio.ColegioRepository;
+import pe.edu.kidcheck.auditoria.AuditoriaService;
 import pe.edu.kidcheck.shared.error.ApiException;
 import pe.edu.kidcheck.shared.security.CurrentUser;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/configuracion")
@@ -27,6 +29,7 @@ public class ConfiguracionController {
 
     private final ConfiguracionRepository configuraciones;
     private final ColegioRepository colegios;
+    private final AuditoriaService auditoria;
     private final CurrentUser actual;
 
     @GetMapping
@@ -55,6 +58,8 @@ public class ConfiguracionController {
                 });
         configuracion.setValor(request.valor());
         configuraciones.save(configuracion);
+        auditoria.registrar("configuracion", configuracion.getId(), "actualizar",
+                Map.of("clave", configuracion.getClave(), "valor", configuracion.getValor()));
         return new ConfiguracionDto(configuracion.getClave(), configuracion.getValor());
     }
 

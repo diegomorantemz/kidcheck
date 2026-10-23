@@ -76,7 +76,7 @@ public class SyncService {
                 boolean repetido = ingresos.findByIdempotencyKey(item.clientId()).isPresent();
                 var respuesta = ingresoService.registrar(
                         new RegistroIngresoRequest(item.idEstudiante(), request.deviceUuid(),
-                                item.fechaHoraUtc(), item.canal()),
+                                item.fechaHoraUtc(), item.canal(), item.observacion()),
                         item.clientId());
 
                 resultados.add(repetido

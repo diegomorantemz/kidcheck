@@ -106,6 +106,8 @@ public class IngresoService {
         ingreso.setFechaLocal(fechaLocal);
         ingreso.setHoraLocal(horaLocal);
         ingreso.setCanal(request.canal() == null ? "qr" : request.canal());
+        ingreso.setObservacion(request.observacion() == null || request.observacion().isBlank()
+                ? null : request.observacion().trim());
         ingreso.setIdempotencyKey(clave);
         ingresos.save(ingreso);
 

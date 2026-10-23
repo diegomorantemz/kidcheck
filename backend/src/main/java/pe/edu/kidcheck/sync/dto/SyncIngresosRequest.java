@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 import java.time.Instant;
 import java.util.List;
@@ -27,7 +28,10 @@ public record SyncIngresosRequest(
             Instant fechaHoraUtc,
 
             @Pattern(regexp = "qr|manual", message = "debe ser qr o manual")
-            String canal
+            String canal,
+
+            @Size(max = 255, message = "debe tener como máximo 255 caracteres")
+            String observacion
     ) {
     }
 }
