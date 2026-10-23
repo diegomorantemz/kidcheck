@@ -1,0 +1,42 @@
+package com.conectacampo.controller 			regexp = "^[0-9
+				    			message = "El t
+import com.conectacampo.service.Use 		) String phone,
+import jakarta.validation.constrain 
+import lombok.RequiredArgsConstruct 		@RequestParam String de
+import org.springframework.security 		@RequestParam String pr
+import org.springframework.stereoty 		@RequestParam String di
+import org.springframework.ui.Model 		Authentication authenti
+import org.springframework.web.bind 		RedirectAttributes redi
+import org.springframework.web.bind 
+import org.springframework.web.bind 	    try {
+import org.springframework.web.bind 		String email = authenti
+import org.springframework.web.serv 		userService.updateProfi
+				    		redirectAttributes.addF
+@Controller			    	    } catch (IllegalArgumentExc
+@RequestMapping("/profile")	    		redirectAttributes.addF
+@RequiredArgsConstructor	    	    } catch (Exception e) {
+public class ProfileController {    		redirectAttributes.addF
+				    	    }
+    private final UserService userS 	    return "redirect:/profile";
+				    	}
+    @GetMapping			    
+    public String showProfile(Model 	@PostMapping("/change-password"
+	model.addAttribute("user",  	public String changePassword(
+	model.addAttribute("title", 		@RequestParam String cu
+	model.addAttribute("current 		@RequestParam String ne
+	return "profile";	    		@RequestParam String co
+    }				    		Authentication authenti
+				    		RedirectAttributes redi
+    @PostMapping("/update")	    
+    public String updateProfile(    	    try {
+	    @RequestParam @Pattern( 		String email = authenti
+		    regexp = "^[A-Z 		userService.changePassw
+		    message = "Los  		redirectAttributes.addF
+	    ) String name,	    	    } catch (IllegalArgumentExc
+				    		redirectAttributes.addF
+	    @RequestParam @Pattern( 	    } catch (Exception e) {
+		    regexp = "^[A-Z 		redirectAttributes.addF
+		    message = "Los  	    }
+	    ) String lastname,	    	    return "redirect:/profile";
+				    	}
+	    @RequestParam @Pattern( }
