@@ -20,6 +20,10 @@ kidcheck/
 docker compose up --build
 ```
 
+> Si Docker responde `permission denied` al conectar con `/var/run/docker.sock`,
+> agrega tu usuario al grupo `docker` y vuelve a iniciar sesión:
+> `sudo usermod -aG docker $USER`.
+
 - Panel: <http://localhost:5173>
 - API: <http://localhost:8080>
 - Swagger: <http://localhost:8080/swagger-ui.html>
@@ -85,6 +89,9 @@ curl -s -X POST localhost:8080/api/v1/ingresos \
 - `GET /api/v1/panel/dia` alimenta el panel con polling cada 5 s.
 - Las notificaciones se guardan en la tabla `notificacion` (outbox) y un worker
   las envía cada 30 s. Con `TWILIO_ENABLED=false` el envío se simula.
+- Solo se notifica a apoderados con consentimiento `notificaciones` en estado
+  `autorizado`; la semilla ya los incluye. WhatsApp es el canal principal y el
+  correo el respaldo cuando no hay teléfono.
 - El job RN-01 marca ausentes pasada la hora límite + tolerancia y genera el
   enlace público `/j/<token>` para que el apoderado justifique en 72 h.
 - El job RN-03 genera alertas de reincidencia los viernes a las 16:00 (Lima).
