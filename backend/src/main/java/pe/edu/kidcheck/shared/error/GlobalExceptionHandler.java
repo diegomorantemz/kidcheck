@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ProblemDetail> handleApi(ApiException ex) {
-        return build(ex.getStatus(), ex.getCode(), ex.getTitle(), ex.getMessage());
+        return build(ex.getStatus(), ex.getCode(), ex.getTitle(), ex.getMessage(), ex.getPropiedades());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -60,10 +60,16 @@ public class GlobalExceptionHandler {
     }
 
     private ResponseEntity<ProblemDetail> build(HttpStatus status, String code, String title, String detail) {
+        return build(status, code, title, detail, java.util.Map.of());
+    }
+
+    private ResponseEntity<ProblemDetail> build(HttpStatus status, String code, String title, String detail,
+                                                java.util.Map<String, Object> propiedades) {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
         problem.setTitle(title);
         problem.setProperty("code", code);
         problem.setProperty("timestamp", Instant.now());
+        propiedades.forEach(problem::setProperty);
         return ResponseEntity.status(status).body(problem);
     }
 }

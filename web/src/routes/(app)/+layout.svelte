@@ -45,7 +45,7 @@
 {:else if me}
 	<div class="shell">
 		<aside class="lateral">
-			<a class="marca" href="/estudiantes">
+			<a class="marca" href="/dashboard">
 				<span class="logo">KC</span>
 				<span>
 					<strong>KidCheck</strong>
@@ -54,6 +54,10 @@
 			</a>
 
 			<nav>
+				<a class:activo={activo('/dashboard')} href="/dashboard">Panel del día</a>
+				<a class:activo={activo('/asistencias')} href="/asistencias">Asistencias</a>
+				<a class:activo={activo('/alertas')} href="/alertas">Alertas</a>
+				<a class:activo={activo('/justificaciones')} href="/justificaciones">Justificaciones</a>
 				<a class:activo={activo('/estudiantes')} href="/estudiantes">Estudiantes</a>
 				<a class:activo={activo('/apoderados')} href="/apoderados">Apoderados</a>
 			</nav>

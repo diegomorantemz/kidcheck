@@ -32,8 +32,14 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:-root}
       JWT_SECRET: ${JWT_SECRET:-kidcheck-dev-secret-cambiar-en-produccion-32bytes}
       CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173,http://localhost:4173}
+      WEB_PUBLIC_URL: ${WEB_PUBLIC_URL:-http://localhost:5173}
+      KIDCHECK_JOBS_ENABLED: ${KIDCHECK_JOBS_ENABLED:-true}
+      TWILIO_ENABLED: ${TWILIO_ENABLED:-false}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_WHATSAPP_FROM: ${TWILIO_WHATSAPP_FROM:-whatsapp:+14155238886}
     ports:
-      - "8080:8080"
+      - "${API_PORT:-8080}:8080"
 
   web:
     build: ./web
@@ -46,7 +52,7 @@ services:
       PORT: 3000
       ORIGIN: ${WEB_ORIGIN:-http://localhost:5173}
     ports:
-      - "5173:3000"
+      - "${WEB_PORT:-5173}:3000"
 
 volumes:
   kidcheck-db-data:

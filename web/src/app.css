@@ -185,9 +185,25 @@ a {
 	color: var(--kc-muted);
 }
 
-.badge.warn {
+.badge.warn,
+.badge-warn {
 	background: var(--kc-warn-light);
 	color: var(--kc-warn);
+}
+
+.badge-danger {
+	background: var(--kc-danger-light);
+	color: var(--kc-danger);
+}
+
+.badge-info {
+	background: #e8f0fe;
+	color: #1f4fb8;
+}
+
+.badge-ok {
+	background: var(--kc-green-light);
+	color: var(--kc-green-dark);
 }
 
 /* ---------- Tablas ---------- */

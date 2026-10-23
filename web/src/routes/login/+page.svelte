@@ -11,7 +11,7 @@
 	onMount(async () => {
 		try {
 			await api('/auth/me');
-			await goto('/estudiantes', { replaceState: true });
+			await goto('/dashboard', { replaceState: true });
 		} catch {
 			// Sin sesión: se queda en el formulario.
 		}
@@ -24,7 +24,7 @@
 
 		try {
 			await api('/auth/login', { method: 'POST', body: { usuario, password } });
-			await goto('/estudiantes');
+			await goto('/dashboard');
 		} catch (excepcion) {
 			error = mensajeDeError(excepcion);
 		} finally {

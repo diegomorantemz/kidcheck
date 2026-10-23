@@ -53,13 +53,43 @@ Si el backend está en otra URL: `API_URL=http://mi-api:8080 npm run dev`.
 | `auxiliar1` | auxiliar | `KidCheck2026!` |
 | `psicologo1` | psicólogo | `KidCheck2026!` |
 
-## Flujo de la demo (S2)
+## Flujo de la demo (S2 + S3)
 
 1. Entrar al panel con `admin1`.
 2. **Apoderados** → registrar un contacto familiar (teléfono con código de país).
 3. **Estudiantes** → *Nuevo estudiante*: datos, sección y apoderado.
 4. Al guardar se emite la credencial: se muestra el QR y se descarga en PNG.
 5. En la lista se puede **reemitir** (revoca la anterior) o **revocar** la credencial.
+
+### Registro de ingresos (S3)
+
+- La app de portería (o curl) llama `POST /api/v1/ingresos` con `Idempotency-Key`.
+- Para probar sin la app, primero pide el roster y registra un ingreso:
+
+```bash
+TOKEN=$(curl -s -X POST localhost:8080/api/v1/auth/login \
+  -H 'content-type: application/json' \
+  -d '{"usuario":"vigilante1","password":"KidCheck2026!","deviceUuid":"11111111-1111-1111-1111-111111111111"}' \
+  | jq -r .accessToken)
+
+curl -s localhost:8080/api/v1/sync/roster -H "Authorization: Bearer $TOKEN" | jq
+
+curl -s -X POST localhost:8080/api/v1/ingresos \
+  -H "Authorization: Bearer $TOKEN" -H 'content-type: application/json' \
+  -H 'Idempotency-Key: demo-0001' \
+  -d '{"idEstudiante":3,"deviceUuid":"11111111-1111-1111-1111-111111111111","fechaHoraUtc":"2026-10-23T12:41:05Z","canal":"qr"}'
+```
+
+- `POST /api/v1/sync/ingresos` acepta lotes desde la cola offline y devuelve
+  `CREADO | DUPLICADO | ERROR` por elemento.
+- `GET /api/v1/panel/dia` alimenta el panel con polling cada 5 s.
+- Las notificaciones se guardan en la tabla `notificacion` (outbox) y un worker
+  las envía cada 30 s. Con `TWILIO_ENABLED=false` el envío se simula.
+- El job RN-01 marca ausentes pasada la hora límite + tolerancia y genera el
+  enlace público `/j/<token>` para que el apoderado justifique en 72 h.
+- El job RN-03 genera alertas de reincidencia los viernes a las 16:00 (Lima).
+
+> Para una demo sin jobs automáticos: `KIDCHECK_JOBS_ENABLED=false`.
 
 ## Variables de entorno
 
@@ -76,6 +106,12 @@ Si el backend está en otra URL: `API_URL=http://mi-api:8080 npm run dev`.
 | `JWT_ACCESS_MINUTES` | `15` | Vida del access token |
 | `JWT_REFRESH_HOURS` | `8` | Vida del refresh token |
 | `CORS_ORIGINS` | `http://localhost:5173,http://localhost:4173` | Orígenes permitidos |
+| `WEB_PUBLIC_URL` | `http://localhost:5173` | Base del enlace público de justificación |
+| `KIDCHECK_JOBS_ENABLED` | `true` | Activa RN-01 y RN-03 |
+| `NOTIF_INTERVALO_MS` | `30000` | Frecuencia del worker de notificaciones |
+| `TWILIO_ENABLED` | `false` | `true` envía por Twilio; `false` simula |
+| `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` | — | Credenciales de Twilio |
+| `TWILIO_WHATSAPP_FROM` | `whatsapp:+14155238886` | Número del sandbox |
 
 ### Panel
 
@@ -84,6 +120,9 @@ Si el backend está en otra URL: `API_URL=http://mi-api:8080 npm run dev`.
 | `API_URL` | `http://localhost:8080` | URL interna del backend (solo servidor) |
 | `PORT` | `3000` (`vite dev`: 5173) | Puerto del servidor Node |
 | `ORIGIN` | — | Origen público cuando se despliega detrás de un proxy |
+
+En Docker también puedes cambiar los puertos publicados con `API_PORT`,
+`WEB_PORT` y `DB_PORT` (ver `.env.example`).
 
 ## Decisiones clave
 
