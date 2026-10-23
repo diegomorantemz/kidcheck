@@ -157,7 +157,8 @@ curl -s -X POST localhost:8080/api/v1/ingresos \
   `GET /api/v1/reportes/asistencia.csv?periodo=2026-10` (CSV solo admin).
 - Auditoría: `GET /api/v1/auditoria?entidad=&desde=&hasta=&pagina=&tamano=`.
 - Justificación pública de la semilla: <http://localhost:5173/j/just-abc>
-  (sin login; expira en 72 h desde la generación de la alerta).
+  (sin login; el enlace de la semilla se mantiene vigente para la demo, mientras
+  que los enlaces generados por RN-01 expiran en 72 h).
 
 > Para una demo sin jobs automáticos: `KIDCHECK_JOBS_ENABLED=false`.
 

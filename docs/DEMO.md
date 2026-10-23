@@ -47,7 +47,8 @@ Abrir en otra pestaña el enlace público de la semilla:
 <http://localhost:5173/j/just-abc>
 
 Mostrar que no requiere login y que la justificación ya fue registrada. En una
-demo con jobs activos, el enlace se genera al marcar la inasistencia.
+demo con jobs activos, el enlace se genera al marcar la inasistencia y expira en
+72 h; el enlace de la semilla se mantiene vigente para no romper la demo.
 
 ## 4. Portería offline (3 min)
 
