@@ -6,6 +6,7 @@ import android.util.Base64
 import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import pe.edu.kidcheck.porteria.BuildConfig
 import pe.edu.kidcheck.porteria.net.LoginResponse
 import java.security.SecureRandom
 import java.util.UUID
@@ -32,6 +33,16 @@ class SecurePrefs(context: Context) {
     } catch (ex: Exception) {
         Log.e(TAG, "Keystore no disponible; se usan preferencias privadas", ex)
         context.getSharedPreferences("${ARCHIVO}_respaldo", Context.MODE_PRIVATE)
+    }
+
+    init {
+        // Si el equipo tenía guardada la URL del emulador (10.0.2.2) y este build
+        // apunta a otra, la reemplazamos: en un celular o tablet real esa IP
+        // nunca resuelve y el login falla con "no se pudo conectar".
+        val guardado = prefs.getString(CLAVE_SERVIDOR, null)
+        if (guardado == SERVIDOR_EMULADOR && SERVIDOR_POR_DEFECTO != SERVIDOR_EMULADOR) {
+            prefs.edit().putString(CLAVE_SERVIDOR, SERVIDOR_POR_DEFECTO).apply()
+        }
     }
 
     var servidor: String
@@ -138,6 +149,7 @@ class SecurePrefs(context: Context) {
         const val CLAVE_DB = "db_key"
         const val CLAVE_PIN = "pin_kiosco"
         const val PIN_POR_DEFECTO = "1234"
-        const val SERVIDOR_POR_DEFECTO = "http://10.0.2.2:8080"
+        val SERVIDOR_POR_DEFECTO = BuildConfig.API_URL_POR_DEFECTO
+        const val SERVIDOR_EMULADOR = "http://10.0.2.2:8080"
     }
 }

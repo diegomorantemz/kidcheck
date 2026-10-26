@@ -3,6 +3,7 @@ package pe.edu.kidcheck.porteria.net
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import pe.edu.kidcheck.porteria.BuildConfig
 import pe.edu.kidcheck.porteria.data.SecurePrefs
 import java.io.IOException
 import java.util.concurrent.TimeUnit
@@ -93,7 +94,7 @@ class KidCheckApi(private val prefs: SecurePrefs) {
 
     fun normalizarServidor(valor: String): String {
         var servidor = valor.trim()
-        if (servidor.isEmpty()) servidor = "http://10.0.2.2:8080"
+        if (servidor.isEmpty()) servidor = BuildConfig.API_URL_POR_DEFECTO
         if (!servidor.startsWith("http://") && !servidor.startsWith("https://")) {
             servidor = "http://$servidor"
         }
