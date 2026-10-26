@@ -58,6 +58,12 @@
 	function hora(valor?: string | null) {
 		return valor ? valor.slice(0, 5) : '—';
 	}
+
+	function alertaTexto(tipo: string) {
+		if (tipo === 'inasistencia') return 'Inasistencia';
+		if (tipo === 'reincidencia') return 'Reincidencia';
+		return 'Tardanza';
+	}
 </script>
 
 <svelte:head>
@@ -198,10 +204,6 @@
 		{/if}
 	</section>
 {/if}
-
-{#snippet alertaTexto(tipo: string)}
-	{tipo === 'inasistencia' ? 'Inasistencia' : tipo === 'reincidencia' ? 'Reincidencia' : 'Tardanza'}
-{/snippet}
 
 <style>
 	.live {

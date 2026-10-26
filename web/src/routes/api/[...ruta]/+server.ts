@@ -114,5 +114,11 @@ export const fallback: RequestHandler = async ({ params, request, cookies, url }
 		salida.set('content-disposition', disposicion);
 	}
 
+	// 204 y 304 no pueden llevar cuerpo; `new Response(texto, { status: 204 })`
+	// lanza TypeError en undici y convertía un borrado correcto en un 500.
+	if (respuesta.status === 204 || respuesta.status === 304) {
+		return new Response(null, { status: respuesta.status, headers: salida });
+	}
+
 	return new Response(await respuesta.text(), { status: respuesta.status, headers: salida });
 };
