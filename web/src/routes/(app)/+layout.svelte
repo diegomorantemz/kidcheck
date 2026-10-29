@@ -31,7 +31,7 @@
 		try {
 			await api('/auth/logout', { method: 'POST' });
 		} finally {
-			await goto('/login');
+			await goto('/login', { replaceState: true });
 		}
 	}
 

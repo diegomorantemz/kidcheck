@@ -16,31 +16,40 @@ interface RespuestaLogin {
 	colegio: { id: number; nombre: string };
 }
 
-function guardarSesion(cookies: import('@sveltejs/kit').Cookies, datos: RespuestaLogin) {
+type Cookies = import('@sveltejs/kit').Cookies;
+
+/**
+ * `Secure` solo con HTTPS: los navegadores descartan cookies Secure servidas
+ * por HTTP plano (IP de la red, 10.0.2.2 del emulador), y el login quedaba
+ * sin sesión; el logout tampoco podía borrarlas.
+ */
+function guardarSesion(cookies: Cookies, datos: RespuestaLogin, secure: boolean) {
 	cookies.set(ACCESS, datos.accessToken, {
 		path: '/',
 		httpOnly: true,
 		sameSite: 'lax',
+		secure,
 		maxAge: 15 * 60
 	});
 	cookies.set(REFRESH, datos.refreshToken, {
 		path: '/',
 		httpOnly: true,
 		sameSite: 'lax',
+		secure,
 		maxAge: 8 * 60 * 60
 	});
 	// Visible para la interfaz (nombre y rol), sin secretos.
 	cookies.set(
 		USER,
 		JSON.stringify({ nombre: datos.usuario.nombre, rol: datos.usuario.rol, colegio: datos.colegio.nombre }),
-		{ path: '/', sameSite: 'lax', maxAge: 8 * 60 * 60 }
+		{ path: '/', sameSite: 'lax', secure, maxAge: 8 * 60 * 60 }
 	);
 }
 
-function borrarSesion(cookies: import('@sveltejs/kit').Cookies) {
-	cookies.delete(ACCESS, { path: '/' });
-	cookies.delete(REFRESH, { path: '/' });
-	cookies.delete(USER, { path: '/' });
+function borrarSesion(cookies: Cookies, secure: boolean) {
+	cookies.delete(ACCESS, { path: '/', secure });
+	cookies.delete(REFRESH, { path: '/', secure });
+	cookies.delete(USER, { path: '/', secure });
 }
 
 /**
@@ -49,9 +58,10 @@ function borrarSesion(cookies: import('@sveltejs/kit').Cookies) {
  */
 export const fallback: RequestHandler = async ({ params, request, cookies, url }) => {
 	const ruta = params.ruta ?? '';
+	const secure = url.protocol === 'https:';
 
 	if (ruta === 'v1/auth/logout') {
-		borrarSesion(cookies);
+		borrarSesion(cookies, secure);
 		return new Response(null, { status: 204 });
 	}
 
@@ -83,11 +93,11 @@ export const fallback: RequestHandler = async ({ params, request, cookies, url }
 
 		if (refresco.ok) {
 			const datos = (await refresco.json()) as RespuestaLogin;
-			guardarSesion(cookies, datos);
+			guardarSesion(cookies, datos, secure);
 			headers.set('authorization', `Bearer ${datos.accessToken}`);
 			respuesta = await fetch(destino, { method, headers, body: cuerpo });
 		} else {
-			borrarSesion(cookies);
+			borrarSesion(cookies, secure);
 		}
 	}
 
@@ -100,7 +110,7 @@ export const fallback: RequestHandler = async ({ params, request, cookies, url }
 		}
 
 		const datos = (await respuesta.json()) as RespuestaLogin;
-		guardarSesion(cookies, datos);
+		guardarSesion(cookies, datos, secure);
 		return json({ usuario: datos.usuario, colegio: datos.colegio, expiresIn: datos.expiresIn });
 	}
 
