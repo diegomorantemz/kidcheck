@@ -83,14 +83,18 @@ class SinSesionException : Exception("La sesión expiró. Vuelve a iniciar sesi�
 
 class KidCheckApi(private val prefs: SecurePrefs) {
 
-    private val gson = Gson()
-    private val cliente = OkHttpClient.Builder()
-        .connectTimeout(12, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .writeTimeout(20, TimeUnit.SECONDS)
-        .build()
+    // Gson y OkHttp se cargan al primer uso: inicializarlos en el arranque
+    // sumaba decenas de segundos de verificación de clases en el emulador.
+    private val gson by lazy { Gson() }
+    private val cliente by lazy {
+        OkHttpClient.Builder()
+            .connectTimeout(12, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .writeTimeout(20, TimeUnit.SECONDS)
+            .build()
+    }
 
-    private val json = "application/json; charset=utf-8".toMediaType()
+    private val json by lazy { "application/json; charset=utf-8".toMediaType() }
 
     fun normalizarServidor(valor: String): String {
         var servidor = valor.trim()

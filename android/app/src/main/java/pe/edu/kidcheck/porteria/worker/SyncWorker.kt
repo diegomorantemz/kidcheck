@@ -12,6 +12,8 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
 import pe.edu.kidcheck.porteria.KidCheckApp
 import pe.edu.kidcheck.porteria.net.SinSesionException
 import java.io.IOException
@@ -24,7 +26,8 @@ class SyncWorker(
 
     override suspend fun doWork(): Result {
         val app = applicationContext as KidCheckApp
-        val graph = app.graph
+        // El grafo se inicializa en segundo plano; el worker espera a que esté listo.
+        val graph = app.graph.filterNotNull().first()
         if (!graph.prefs.estaAutenticado) return Result.success()
 
         return try {

@@ -1,7 +1,15 @@
 package pe.edu.kidcheck.porteria
 
 import android.app.Application
+import android.os.SystemClock
 import android.util.Log
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import pe.edu.kidcheck.porteria.data.AppDatabase
 import pe.edu.kidcheck.porteria.data.PorteriaRepository
 import pe.edu.kidcheck.porteria.data.SecurePrefs
@@ -17,18 +25,33 @@ class AppGraph(context: Application) {
 
 class KidCheckApp : Application() {
 
-    lateinit var graph: AppGraph
-        private set
+    /**
+     * El grafo se construye fuera del hilo principal: abrir el Keystore
+     * (EncryptedSharedPreferences) y la base SQLCipher puede tardar varios
+     * segundos en un emulador y provocaba el diálogo "La app no responde".
+     */
+    private val _graph = MutableStateFlow<AppGraph?>(null)
+    val graph: StateFlow<AppGraph?> = _graph.asStateFlow()
+
+    private val initScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()
-        try {
-            System.loadLibrary("sqlcipher")
-        } catch (ex: Throwable) {
-            Log.e(TAG, "No se pudo cargar SQLCipher", ex)
+        initScope.launch {
+            val inicio = SystemClock.elapsedRealtime()
+            try {
+                System.loadLibrary("sqlcipher")
+            } catch (ex: Throwable) {
+                Log.e(TAG, "No se pudo cargar SQLCipher", ex)
+            }
+
+            val grafo = AppGraph(this@KidCheckApp)
+            _graph.value = grafo
+            Log.d(TAG, "Arranque de datos en ${SystemClock.elapsedRealtime() - inicio} ms")
+
+            // WorkManager también inicializa componentes; fuera del hilo principal.
+            SyncScheduler.programar(this@KidCheckApp)
         }
-        graph = AppGraph(this)
-        SyncScheduler.programar(this)
     }
 
     private companion object {
