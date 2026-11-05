@@ -1,0 +1,2 @@
+BUILD SUCCESSFUL in 5s
+<testsuite name="pe.edu.kidcheck.porteria.data.PorteriaHashTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-11-05T17:17:39.384Z" hostname="MacBook-Pro-de-Diego" time="0.074">

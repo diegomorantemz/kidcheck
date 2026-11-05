@@ -1,0 +1,30 @@
+11-05 12:08:00.544   478  1378 E ActivityManager: ANR in com.google.android.inputmethod.latin
+11-05 12:08:28.293  1559  1665 D KidCheckApp: Arranque de datos en 9067 ms
+11-05 12:08:37.983   478  1378 E ActivityManager: ANR in com.google.android.as
+11-05 12:09:08.087   478  1378 E ActivityManager: ANR in com.google.android.permissioncontroller
+11-05 12:09:17.840   478  1378 E ActivityManager: ANR in com.google.android.providers.media.module
+11-05 12:09:28.548   478  1378 E ActivityManager: ANR in com.google.android.googlequicksearchbox:interactor
+11-05 12:09:46.442   478  1378 E ActivityManager: ANR in com.google.android.apps.messaging:rcs
+11-05 12:10:08.882   478  1378 E ActivityManager: ANR in com.google.android.gms.persistent
+11-05 12:10:30.974   478  1378 E ActivityManager: ANR in com.google.android.apps.nexuslauncher
+11-05 12:10:43.729   478  1378 E ActivityManager: ANR in com.google.android.gms
+11-05 12:10:45.609   478  1378 E ActivityManager: ANR in com.google.android.apps.photos
+11-05 12:10:46.940   478   583 I WindowManager: ANR in input window owned by pid=971. Reason: [Gesture Monitor] swipe-up (server) is not responding. Waited 5001ms for MotionEvent
+11-05 12:10:49.055   478   583 I WindowManager: ANR in input window owned by pid=677. Reason: [Gesture Monitor] edge-swipe (server) is not responding. Waited 5002ms for MotionEvent
+11-05 12:10:49.682   478   583 I WindowManager: ANR in Window{3a94540 u0 NavigationBar0}. Reason:3a94540 NavigationBar0 (server) is not responding. Waited 5629ms for MotionEvent
+11-05 12:10:49.796   478  1378 E ActivityManager: ANR in com.android.phone
+11-05 12:10:52.990   478  1378 E ActivityManager: ANR in com.google.android.permissioncontroller
+11-05 12:10:59.867   478  1378 E ActivityManager: ANR in com.android.vending
+11-05 12:11:10.516   478  1378 E ActivityManager: ANR in com.google.android.dialer
+11-05 12:11:21.446   478  1378 E ActivityManager: ANR in com.google.android.gms.persistent
+11-05 12:11:23.014   478  1378 E ActivityManager: ANR in com.google.android.inputmethod.latin
+11-05 12:12:05.385  3474  3517 D KidCheckApp: Arranque de datos en 17204 ms
+11-05 12:12:12.186   478  1378 E ActivityManager: ANR in com.android.vending
+11-05 12:16:18.305  3730  4071 E ActivityManager: ANR in com.android.systemui
+11-05 12:16:32.404  3730  4071 E ActivityManager: ANR in com.android.networkstack.process
+11-05 12:17:37.235  3730  4514 E ActivityManager: ANR in com.android.systemui
+11-05 12:17:40.193  3730  4514 E ActivityManager: ANR in com.android.phone
+11-05 12:18:31.984  3730  4900 E ActivityManager: ANR in com.google.android.gms.persistent
+11-05 12:19:09.097  3730  4900 E ActivityManager: ANR in com.google.android.as
+11-05 12:19:17.934  3730  4900 E ActivityManager: ANR in com.android.phone
+11-05 12:24:50.408  3730  4900 E ActivityManager: ANR in com.google.android.googlequicksearchbox:interactor

@@ -18,7 +18,9 @@ Qué cubre:
 - `ApiIntegrationTest`: MySQL 8.4 real en Testcontainers, Flyway desde cero,
   login JWT, reportes diario/mensual, CSV y roles, auditoría, justificación
   pública, configuración/secciones e idempotencia del lote de ingresos con
-  `observacion`.
+  `observacion`. Incluye el flujo QR (roster con `tokenHash`, ingreso con
+  `canal=qr`, asistencia `presente`/`escaner` y duplicados) y la regresión
+  DEF-01: un alumno marcado ausente por RN-01 puede registrar su ingreso.
 
 El test de integración se omite automáticamente si Docker no está disponible
 (`@Testcontainers(disabledWithoutDocker = true)`). Para la entrega, ejecútalo con
@@ -116,7 +118,7 @@ sincronización es el mismo.
 - [ ] `docker compose ps` muestra `db`, `api` y `web` arriba.
 - [ ] `http://localhost:8080/actuator/health` responde `UP`.
 - [ ] `npm run test:e2e` termina con 11/11.
-- [ ] `mvn test` termina con 13/13.
+- [ ] `mvn test` termina con 15/15.
 - [ ] `docker compose logs api` no muestra errores de Flyway ni de conexión.
 - [ ] El APK está instalado y el servidor apunta al host correcto.
 - [ ] WhatsApp está en modo simulado (`TWILIO_ENABLED=false`) o el Sandbox está

@@ -1,0 +1,12 @@
+--- primer envio ---
+{"resultados":[{"clientId":"c7e328cf-4625-40c0-af3a-694d9fb5f077","status":"CREADO","idIngreso":6,"horaLocal":"07:30","mensaje":"Ingreso registrado"}]}
+HTTP 200
+--- reintento mismo clientId ---
+{"resultados":[{"clientId":"c7e328cf-4625-40c0-af3a-694d9fb5f077","status":"DUPLICADO","idIngreso":6,"horaLocal":"07:30","codigo":"INGRESO_YA_REGISTRADO","mensaje":"El ingreso ya estaba registrado"}]}
+HTTP 200
+--- SQL ---
+mysql: [Warning] Using a password on the command line interface can be insecure.
+id_ingreso	id_estudiante	fecha_local	hora_local	canal	idempotency_key
+6	3	2026-11-05	07:30:00	qr	c7e328cf-4625-40c0-af3a-694d9fb5f077
+id_asistencia	id_estudiante	fecha	estado	minutos_tarde	origen	id_ingreso
+155	3	2026-11-05	presente	0	escaner	6

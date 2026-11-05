@@ -200,7 +200,7 @@ En Docker también puedes cambiar los puertos publicados con `API_PORT`,
 Requiere Docker para MySQL/Testcontainers y para los servicios del panel.
 
 ```bash
-# Backend: 13 tests (unitarios + integración con MySQL 8.4)
+# Backend: 15 tests (unitarios + integración con MySQL 8.4)
 cd backend && mvn test
 
 # Panel: 11 pruebas E2E con Playwright

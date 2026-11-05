@@ -90,7 +90,7 @@ el duplicado y la sincronización son exactamente los mismos.
   notificaciones; panel con roles.
 - Limitaciones: WhatsApp simulado si no hay Twilio Sandbox, kiosco sin MDM,
   integración con el sistema oficial del colegio fuera de alcance.
-- Estado S6: 13 pruebas de backend, 11 E2E de Playwright y carga k6 superada;
+- Estado S6: 15 pruebas de backend, 11 E2E de Playwright y carga k6 superada;
   el APK compila, pasa lint y la prueba JVM de hash. Grabar el video final con
   este mismo guion y conservar los resultados de `docs/TESTING.md`.
 

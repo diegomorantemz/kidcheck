@@ -1,0 +1,21 @@
+DEF-01 — Evidencia del FAIL original (transcripción de la ejecución)
+
+Fecha: 2026-11-05
+Caso: CP-01, primer intento contra la API real (MySQL de desarrollo).
+Datos: estudiante 3, fecha 2026-11-05T12:30:00Z, canal qr,
+       clientId 883a1a34-eec7-440f-8b78-75fcaed451a8 (generado en esa ejecución).
+
+Respuesta de POST /api/v1/sync/ingresos:
+{"resultados":[{"clientId":"883a1a34-eec7-440f-8b78-75fcaed451a8","status":"ERROR","codigo":"ERROR_INTERNO","mensaje":"No se pudo registrar el ingreso."}]}
+HTTP 200
+
+Log de la API (docker compose logs api):
+2026-11-05T17:18:45.320Z WARN  ... SqlExceptionHelper : SQL Error: 1062, SQLState: 23000
+2026-11-05T17:18:45.322Z ERROR ... SqlExceptionHelper : Duplicate entry '3-2026-11-05' for key 'asistencia_dia.uq_asistencia_dia'
+
+Causa: RN-01 ya había creado la asistencia del día como 'ausente' y
+IngresoService intentaba insertar otra fila, violando la clave única
+(id_estudiante, fecha).
+
+Corrección: commit 1757cbc; IngresoService actualiza la fila existente.
+Re-prueba: ver def01-retest.txt y cp01-api.txt (CREADO, una sola asistencia).
