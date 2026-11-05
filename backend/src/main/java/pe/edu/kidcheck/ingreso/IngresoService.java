@@ -111,7 +111,12 @@ public class IngresoService {
         ingreso.setIdempotencyKey(clave);
         ingresos.save(ingreso);
 
-        AsistenciaDia asistencia = new AsistenciaDia();
+        // Si RN-01 ya marcó ausencia (o existe una justificación), se actualiza
+        // la fila del día en vez de insertar otra: uq_asistencia_dia es único
+        // por estudiante y fecha.
+        AsistenciaDia asistencia = asistencias
+                .findByEstudianteIdAndFecha(estudiante.getId(), fechaLocal)
+                .orElseGet(AsistenciaDia::new);
         asistencia.setEstudiante(estudiante);
         asistencia.setSeccion(matricula.getSeccion());
         asistencia.setFecha(fechaLocal);

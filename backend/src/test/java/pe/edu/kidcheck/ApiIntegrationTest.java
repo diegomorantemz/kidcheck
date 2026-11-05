@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import pe.edu.kidcheck.shared.crypto.Hashes;
 
 import java.util.UUID;
 
@@ -229,6 +230,130 @@ class ApiIntegrationTest {
                         .header("Authorization", "Bearer " + admin))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contenido[0].entidad").value("seccion"));
+    }
+
+    @Test
+    @Order(8)
+    void flujoQrMarcacionEsIdempotenteYNoDuplica() throws Exception {
+        String token = token("vigilante1");
+
+        // 1. El roster entrega el hash SHA-256 de la credencial, no el token.
+        String roster = mvc.perform(get("/api/v1/sync/roster")
+                        .header("Authorization", "Bearer " + token))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        JsonNode camila = null;
+        for (JsonNode estudiante : json.readTree(roster).get("estudiantes")) {
+            if (estudiante.get("idEstudiante").asLong() == 3L) {
+                camila = estudiante;
+                break;
+            }
+        }
+        assertThat(camila).isNotNull();
+        assertThat(camila.get("tokenHash").asText())
+                .isEqualTo(Hashes.sha256Hex("tok-camila-0031"))
+                .hasSize(64);
+
+        // 2. Primer escaneo del día: se crea el ingreso y la asistencia.
+        String clientId = UUID.randomUUID().toString();
+        String cuerpo = """
+                {
+                  "deviceUuid": "11111111-1111-1111-1111-111111111111",
+                  "ingresos": [{
+                    "clientId": "%s",
+                    "idEstudiante": 3,
+                    "fechaHoraUtc": "2026-11-05T12:00:00Z",
+                    "canal": "qr"
+                  }]
+                }
+                """.formatted(clientId);
+
+        mvc.perform(post("/api/v1/sync/ingresos")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cuerpo))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultados[0].status").value("CREADO"))
+                .andExpect(jsonPath("$.resultados[0].idIngreso").isNumber());
+
+        assertThat(cantidadIngresos("2026-11-05")).isEqualTo(1);
+        assertThat(jdbc.queryForObject(
+                "select estado from asistencia_dia where id_estudiante = 3 and fecha = '2026-11-05'",
+                String.class)).isEqualTo("presente");
+        assertThat(jdbc.queryForObject(
+                "select origen from asistencia_dia where id_estudiante = 3 and fecha = '2026-11-05'",
+                String.class)).isEqualTo("escaner");
+
+        // 3. Reintento con el mismo clientId: idempotente, sin duplicar.
+        mvc.perform(post("/api/v1/sync/ingresos")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cuerpo))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultados[0].status").value("DUPLICADO"));
+
+        // 4. Otro clientId para el mismo alumno y día: el servidor también lo rechaza.
+        String otroClientId = UUID.randomUUID().toString();
+        String otroCuerpo = cuerpo.replace(clientId, otroClientId);
+        mvc.perform(post("/api/v1/sync/ingresos")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(otroCuerpo))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultados[0].status").value("DUPLICADO"));
+
+        assertThat(cantidadIngresos("2026-11-05")).isEqualTo(1);
+    }
+
+    @Test
+    @Order(9)
+    void unAlumnoMarcadoAusentePuedeRegistrarSuIngresoDespues() throws Exception {
+        // RN-01 ya creó la asistencia del día como ausente.
+        jdbc.update("""
+                insert into asistencia_dia
+                    (id_estudiante, id_seccion, fecha, estado, minutos_tarde, origen)
+                values (3, 2, '2026-11-06', 'ausente', 0, 'job')
+                """);
+
+        String token = token("vigilante1");
+        String clientId = UUID.randomUUID().toString();
+        String cuerpo = """
+                {
+                  "deviceUuid": "11111111-1111-1111-1111-111111111111",
+                  "ingresos": [{
+                    "clientId": "%s",
+                    "idEstudiante": 3,
+                    "fechaHoraUtc": "2026-11-06T12:00:00Z",
+                    "canal": "qr"
+                  }]
+                }
+                """.formatted(clientId);
+
+        mvc.perform(post("/api/v1/sync/ingresos")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cuerpo))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.resultados[0].status").value("CREADO"));
+
+        assertThat(cantidadIngresos("2026-11-06")).isEqualTo(1);
+        assertThat(jdbc.queryForObject(
+                "select count(*) from asistencia_dia where id_estudiante = 3 and fecha = '2026-11-06'",
+                Integer.class)).isEqualTo(1);
+        assertThat(jdbc.queryForObject(
+                "select estado from asistencia_dia where id_estudiante = 3 and fecha = '2026-11-06'",
+                String.class)).isEqualTo("presente");
+        assertThat(jdbc.queryForObject(
+                "select origen from asistencia_dia where id_estudiante = 3 and fecha = '2026-11-06'",
+                String.class)).isEqualTo("escaner");
+    }
+
+    private int cantidadIngresos(String fecha) {
+        Integer total = jdbc.queryForObject(
+                "select count(*) from ingreso where id_estudiante = 3 and fecha_local = ?",
+                Integer.class, fecha);
+        return total == null ? 0 : total;
     }
 
     private String token(String usuario) throws Exception {
