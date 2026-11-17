@@ -31,7 +31,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -341,7 +343,10 @@ fun PorteriaScreen(graph: AppGraph, onSalir: () -> Unit) {
             }
 
             Column(
-                modifier = Modifier.weight(1f).fillMaxHeight(),
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 TarjetaResultado(resultado)
@@ -387,7 +392,7 @@ fun PorteriaScreen(graph: AppGraph, onSalir: () -> Unit) {
                     )
                 }
 
-                Spacer(Modifier.weight(1f))
+                Spacer(Modifier.height(8.dp))
 
                 Text(
                     "Modo kiosco activo · Pantalla fija · Salida con PIN",
@@ -717,7 +722,12 @@ private fun BusquedaManualDialog(
                         }
                     }
 
-                    Column(modifier = Modifier.weight(0.85f).fillMaxHeight()) {
+                    Column(
+                        modifier = Modifier
+                            .weight(0.85f)
+                            .fillMaxHeight()
+                            .verticalScroll(rememberScrollState())
+                    ) {
                         val estudiante = seleccionado
                         if (estudiante == null) {
                             Box(
@@ -759,7 +769,7 @@ private fun BusquedaManualDialog(
                             if (error != null) {
                                 Text(error ?: "", color = Rojo, style = MaterialTheme.typography.bodyMedium)
                             }
-                            Spacer(Modifier.weight(1f))
+                            Spacer(Modifier.height(12.dp))
                             Button(
                                 onClick = {
                                     val elegido = motivo ?: return@Button
