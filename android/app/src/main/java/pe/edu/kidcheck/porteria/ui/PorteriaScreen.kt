@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.media.AudioManager
 import android.media.ToneGenerator
 import android.os.VibrationEffect
@@ -61,6 +62,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
@@ -306,103 +308,104 @@ fun PorteriaScreen(graph: AppGraph, onSalir: () -> Unit) {
         // El botón atrás está bloqueado mientras la tablet está en modo kiosco.
     }
 
-    Column(modifier = Modifier.fillMaxSize().background(Fondo)) {
-        BarraSuperior(
-            colegio = graph.prefs.colegioNombre.ifBlank { "KidCheck" },
-            usuario = graph.prefs.usuarioNombre,
-            pendientes = pendientes,
-            sincronizando = sincronizando,
-            ultimaSync = ultimaSync,
-            alSincronizar = {
-                aviso = null
-                alcance.launch { sincronizarTodo(mostrarAviso = true) }
-            },
-            alSalir = { mostrarSalida = true }
-        )
+    val compacto = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
 
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(18.dp),
-            horizontalArrangement = Arrangement.spacedBy(18.dp)
-        ) {
-            Column(modifier = Modifier.weight(1.45f).fillMaxHeight()) {
+    Column(modifier = Modifier.fillMaxSize().background(Fondo)) {
+        if (compacto) {
+            BarraSuperiorCompacta(
+                colegio = graph.prefs.colegioNombre.ifBlank { "KidCheck" },
+                usuario = graph.prefs.usuarioNombre,
+                pendientes = pendientes,
+                sincronizando = sincronizando,
+                ultimaSync = ultimaSync,
+                alSincronizar = {
+                    aviso = null
+                    alcance.launch { sincronizarTodo(mostrarAviso = true) }
+                },
+                alSalir = { mostrarSalida = true }
+            )
+        } else {
+            BarraSuperior(
+                colegio = graph.prefs.colegioNombre.ifBlank { "KidCheck" },
+                usuario = graph.prefs.usuarioNombre,
+                pendientes = pendientes,
+                sincronizando = sincronizando,
+                ultimaSync = ultimaSync,
+                alSincronizar = {
+                    aviso = null
+                    alcance.launch { sincronizarTodo(mostrarAviso = true) }
+                },
+                alSalir = { mostrarSalida = true }
+            )
+        }
+
+        if (compacto) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
                 if (permisoCamara) {
                     CameraScanner(
                         activo = resultado == null && !procesando &&
                             !mostrarBusqueda && !mostrarHistorial && !mostrarSalida,
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxWidth().height(300.dp),
                         onQrDetectado = { procesarQr(it) }
                     )
                 } else {
                     SinCamara(
+                        modifier = Modifier.fillMaxWidth().height(300.dp),
                         alReintentar = { lanzadorPermiso.launch(Manifest.permission.CAMERA) },
                         alBuscar = { mostrarBusqueda = true }
                     )
                 }
-            }
 
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxHeight()
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                TarjetaResultado(resultado)
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Estadistica(
-                        titulo = "Ingresos hoy",
-                        valor = delDia.size.toString(),
-                        color = VerdeOscuro,
-                        modifier = Modifier.weight(1f)
-                    )
-                    Estadistica(
-                        titulo = "Por enviar",
-                        valor = pendientes.toString(),
-                        color = if (pendientes > 0) Ambar else VerdeOscuro,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                Button(
-                    onClick = { mostrarBusqueda = true },
-                    modifier = Modifier.fillMaxWidth().height(62.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Verde)
-                ) {
-                    Text("Buscar alumno", style = MaterialTheme.typography.titleMedium)
-                }
-
-                OutlinedButton(
-                    onClick = { mostrarHistorial = true },
-                    modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
-                ) {
-                    Text("Historial del día", style = MaterialTheme.typography.titleMedium)
-                }
-
-                if (aviso != null) {
-                    Text(
-                        aviso ?: "",
-                        color = TextoSuave,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-
-                Spacer(Modifier.height(8.dp))
-
-                Text(
-                    "Modo kiosco activo · Pantalla fija · Salida con PIN",
-                    color = TextoSuave,
-                    style = MaterialTheme.typography.bodyMedium
+                PanelAcciones(
+                    resultado = resultado,
+                    delDia = delDia,
+                    pendientes = pendientes,
+                    aviso = aviso,
+                    onBuscar = { mostrarBusqueda = true },
+                    onHistorial = { mostrarHistorial = true }
                 )
-                Text(
-                    "Si se corta el internet, los ingresos se guardan y se envían solos al recuperar la conexión.",
-                    color = TextoSuave,
-                    style = MaterialTheme.typography.bodyMedium
+            }
+        } else {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(18.dp),
+                horizontalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
+                Column(modifier = Modifier.weight(1.45f).fillMaxHeight()) {
+                    if (permisoCamara) {
+                        CameraScanner(
+                            activo = resultado == null && !procesando &&
+                                !mostrarBusqueda && !mostrarHistorial && !mostrarSalida,
+                            modifier = Modifier.fillMaxSize(),
+                            onQrDetectado = { procesarQr(it) }
+                        )
+                    } else {
+                        SinCamara(
+                            modifier = Modifier.fillMaxSize(),
+                            alReintentar = { lanzadorPermiso.launch(Manifest.permission.CAMERA) },
+                            alBuscar = { mostrarBusqueda = true }
+                        )
+                    }
+                }
+
+                PanelAcciones(
+                    resultado = resultado,
+                    delDia = delDia,
+                    pendientes = pendientes,
+                    aviso = aviso,
+                    onBuscar = { mostrarBusqueda = true },
+                    onHistorial = { mostrarHistorial = true },
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState())
                 )
             }
         }
@@ -438,6 +441,78 @@ fun PorteriaScreen(graph: AppGraph, onSalir: () -> Unit) {
                 mostrarSalida = false
                 onSalir()
             }
+        )
+    }
+}
+
+@Composable
+private fun PanelAcciones(
+    resultado: ResultadoUi?,
+    delDia: List<ColaEntity>,
+    pendientes: Int,
+    aviso: String?,
+    onBuscar: () -> Unit,
+    onHistorial: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        TarjetaResultado(resultado)
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Estadistica(
+                titulo = "Ingresos hoy",
+                valor = delDia.size.toString(),
+                color = VerdeOscuro,
+                modifier = Modifier.weight(1f)
+            )
+            Estadistica(
+                titulo = "Por enviar",
+                valor = pendientes.toString(),
+                color = if (pendientes > 0) Ambar else VerdeOscuro,
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        Button(
+            onClick = onBuscar,
+            modifier = Modifier.fillMaxWidth().height(62.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Verde)
+        ) {
+            Text("Buscar alumno", style = MaterialTheme.typography.titleMedium)
+        }
+
+        OutlinedButton(
+            onClick = onHistorial,
+            modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)
+        ) {
+            Text("Historial del día", style = MaterialTheme.typography.titleMedium)
+        }
+
+        if (aviso != null) {
+            Text(
+                aviso,
+                color = TextoSuave,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        Text(
+            "Modo kiosco activo · Pantalla fija · Salida con PIN",
+            color = TextoSuave,
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            "Si se corta el internet, los ingresos se guardan y se envían solos al recuperar la conexión.",
+            color = TextoSuave,
+            style = MaterialTheme.typography.bodyMedium
         )
     }
 }
@@ -512,10 +587,80 @@ private fun BarraSuperior(
 }
 
 @Composable
-private fun SinCamara(alReintentar: () -> Unit, alBuscar: () -> Unit) {
+private fun BarraSuperiorCompacta(
+    colegio: String,
+    usuario: String,
+    pendientes: Int,
+    sincronizando: Boolean,
+    ultimaSync: Long,
+    alSincronizar: () -> Unit,
+    alSalir: () -> Unit
+) {
+    Surface(color = Color.White, shadowElevation = 3.dp) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .background(Verde, RoundedCornerShape(12.dp)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("KC", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+                }
+                Spacer(Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Portería", style = MaterialTheme.typography.titleLarge)
+                    Text(colegio, color = TextoSuave, style = MaterialTheme.typography.bodySmall)
+                }
+                OutlinedButton(onClick = alSalir) {
+                    Text("Salir")
+                }
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        if (sincronizando) "Sincronizando…" else "Pendientes: $pendientes",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = if (pendientes > 0) Ambar else VerdeOscuro
+                    )
+                    Text(
+                        "Última: ${horaSync(ultimaSync)} · $usuario",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextoSuave
+                    )
+                }
+                OutlinedButton(
+                    onClick = alSincronizar,
+                    enabled = !sincronizando
+                ) {
+                    if (sincronizando) {
+                        CircularProgressIndicator(
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                    }
+                    Text("Sincronizar")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun SinCamara(
+    modifier: Modifier = Modifier,
+    alReintentar: () -> Unit,
+    alBuscar: () -> Unit
+) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = modifier
             .background(Color(0xFF101613), RoundedCornerShape(18.dp))
             .padding(28.dp),
         contentAlignment = Alignment.Center
@@ -638,6 +783,22 @@ private fun BusquedaManualDialog(
         estudiantes = graph.repository.buscarRoster(texto)
     }
 
+    fun confirmar(estudiante: RosterEntity) {
+        val elegido = motivo ?: return
+        guardando = true
+        error = null
+        alcance.launch {
+            try {
+                val registro = graph.repository.registrarManual(estudiante, elegido)
+                onResultado(registro, estudiante)
+            } catch (ex: Exception) {
+                error = "No se pudo registrar. Intenta nuevamente."
+            } finally {
+                guardando = false
+            }
+        }
+    }
+
     Dialog(
         onDismissRequest = onCerrar,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -661,139 +822,194 @@ private fun BusquedaManualDialog(
                 }
                 Spacer(Modifier.height(14.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.spacedBy(20.dp)
-                ) {
-                    Column(modifier = Modifier.weight(1.15f).fillMaxHeight()) {
-                        OutlinedTextField(
-                            value = texto,
-                            onValueChange = { texto = it },
-                            label = { Text("Nombre, apellido o código") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                        Spacer(Modifier.height(10.dp))
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            items(estudiantes, key = { it.idEstudiante }) { estudiante ->
-                                val activo = seleccionado?.idEstudiante == estudiante.idEstudiante
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(if (activo) VerdeClaro else Color.Transparent)
-                                        .clickable {
-                                            seleccionado = estudiante
-                                            motivo = null
-                                            error = null
-                                        }
-                                        .padding(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            estudiante.nombreCompleto,
-                                            style = MaterialTheme.typography.titleMedium
-                                        )
-                                        Text(
-                                            "${estudiante.seccion} · ${estudiante.codigoMatricula}",
-                                            color = TextoSuave,
-                                            style = MaterialTheme.typography.bodyMedium
-                                        )
-                                    }
-                                    if (activo) {
-                                        Text("Elegido", color = VerdeOscuro)
-                                    }
-                                }
-                                HorizontalDivider(color = Borde)
-                            }
-                            if (estudiantes.isEmpty()) {
-                                item {
-                                    Text(
-                                        "No hay estudiantes en el roster local. Conéctate y sincroniza.",
-                                        color = TextoSuave,
-                                        modifier = Modifier.padding(14.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
+                val compacto =
+                    LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
 
-                    Column(
-                        modifier = Modifier
-                            .weight(0.85f)
-                            .fillMaxHeight()
-                            .verticalScroll(rememberScrollState())
+                if (compacto) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        ListaEstudiantes(
+                            texto = texto,
+                            onTextoChange = { texto = it },
+                            estudiantes = estudiantes,
+                            seleccionado = seleccionado,
+                            onSeleccionar = { estudiante ->
+                                seleccionado = estudiante
+                                motivo = null
+                                error = null
+                            },
+                            modifier = Modifier.weight(0.55f)
+                        )
+                        Spacer(Modifier.height(12.dp))
+                        FormularioMotivo(
+                            estudiante = seleccionado,
+                            motivo = motivo,
+                            onMotivo = { motivo = it },
+                            error = error,
+                            guardando = guardando,
+                            onConfirmar = { seleccionado?.let { confirmar(it) } },
+                            modifier = Modifier
+                                .weight(0.45f)
+                                .verticalScroll(rememberScrollState())
+                        )
+                    }
+                } else {
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        horizontalArrangement = Arrangement.spacedBy(20.dp)
                     ) {
-                        val estudiante = seleccionado
-                        if (estudiante == null) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .background(Fondo, RoundedCornerShape(14.dp))
-                                    .padding(20.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    "Selecciona un estudiante de la lista para continuar.",
-                                    color = TextoSuave,
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
-                            }
-                        } else {
-                            Text(
-                                "Motivo del registro manual",
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                estudiante.nombreCompleto,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = TextoSuave
-                            )
-                            Spacer(Modifier.height(12.dp))
-                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                MOTIVOS.forEach { (valor, etiqueta) ->
-                                    FilterChip(
-                                        selected = motivo == valor,
-                                        onClick = { motivo = valor },
-                                        label = { Text(etiqueta) },
-                                        modifier = Modifier.fillMaxWidth()
-                                    )
-                                }
-                            }
-                            Spacer(Modifier.height(12.dp))
-                            if (error != null) {
-                                Text(error ?: "", color = Rojo, style = MaterialTheme.typography.bodyMedium)
-                            }
-                            Spacer(Modifier.height(12.dp))
-                            Button(
-                                onClick = {
-                                    val elegido = motivo ?: return@Button
-                                    guardando = true
-                                    error = null
-                                    alcance.launch {
-                                        try {
-                                            val registro = graph.repository.registrarManual(estudiante, elegido)
-                                            onResultado(registro, estudiante)
-                                        } catch (ex: Exception) {
-                                            error = "No se pudo registrar. Intenta nuevamente."
-                                        } finally {
-                                            guardando = false
-                                        }
-                                    }
-                                },
-                                enabled = motivo != null && !guardando,
-                                modifier = Modifier.fillMaxWidth().height(56.dp)
-                            ) {
-                                Text(if (guardando) "Registrando…" else "Confirmar ingreso")
-                            }
-                        }
+                        ListaEstudiantes(
+                            texto = texto,
+                            onTextoChange = { texto = it },
+                            estudiantes = estudiantes,
+                            seleccionado = seleccionado,
+                            onSeleccionar = { estudiante ->
+                                seleccionado = estudiante
+                                motivo = null
+                                error = null
+                            },
+                            modifier = Modifier.weight(1.15f).fillMaxHeight()
+                        )
+                        FormularioMotivo(
+                            estudiante = seleccionado,
+                            motivo = motivo,
+                            onMotivo = { motivo = it },
+                            error = error,
+                            guardando = guardando,
+                            onConfirmar = { seleccionado?.let { confirmar(it) } },
+                            modifier = Modifier
+                                .weight(0.85f)
+                                .fillMaxHeight()
+                                .verticalScroll(rememberScrollState())
+                        )
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ListaEstudiantes(
+    texto: String,
+    onTextoChange: (String) -> Unit,
+    estudiantes: List<RosterEntity>,
+    seleccionado: RosterEntity?,
+    onSeleccionar: (RosterEntity) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = texto,
+            onValueChange = onTextoChange,
+            label = { Text("Nombre, apellido o código") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(Modifier.height(10.dp))
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+        ) {
+            items(estudiantes, key = { it.idEstudiante }) { estudiante ->
+                val activo = seleccionado?.idEstudiante == estudiante.idEstudiante
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(if (activo) VerdeClaro else Color.Transparent)
+                        .clickable { onSeleccionar(estudiante) }
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            estudiante.nombreCompleto,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            "${estudiante.seccion} · ${estudiante.codigoMatricula}",
+                            color = TextoSuave,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                    if (activo) {
+                        Text("Elegido", color = VerdeOscuro)
+                    }
+                }
+                HorizontalDivider(color = Borde)
+            }
+            if (estudiantes.isEmpty()) {
+                item {
+                    Text(
+                        "No hay estudiantes en el roster local. Conéctate y sincroniza.",
+                        color = TextoSuave,
+                        modifier = Modifier.padding(14.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun FormularioMotivo(
+    estudiante: RosterEntity?,
+    motivo: String?,
+    onMotivo: (String) -> Unit,
+    error: String?,
+    guardando: Boolean,
+    onConfirmar: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        if (estudiante == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 220.dp)
+                    .background(Fondo, RoundedCornerShape(14.dp))
+                    .padding(20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    "Selecciona un estudiante de la lista para continuar.",
+                    color = TextoSuave,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        } else {
+            Text(
+                "Motivo del registro manual",
+                style = MaterialTheme.typography.titleLarge
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                estudiante.nombreCompleto,
+                style = MaterialTheme.typography.bodyLarge,
+                color = TextoSuave
+            )
+            Spacer(Modifier.height(12.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                MOTIVOS.forEach { (valor, etiqueta) ->
+                    FilterChip(
+                        selected = motivo == valor,
+                        onClick = { onMotivo(valor) },
+                        label = { Text(etiqueta) },
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+            if (error != null) {
+                Text(error, color = Rojo, style = MaterialTheme.typography.bodyMedium)
+            }
+            Spacer(Modifier.height(12.dp))
+            Button(
+                onClick = onConfirmar,
+                enabled = motivo != null && !guardando,
+                modifier = Modifier.fillMaxWidth().height(56.dp)
+            ) {
+                Text(if (guardando) "Registrando…" else "Confirmar ingreso")
             }
         }
     }

@@ -36,10 +36,21 @@ test.describe('autenticación y navegación por rol', () => {
 	test('credenciales inválidas muestran un error', async ({ page }) => {
 		await page.goto('/login');
 		await page.getByLabel('Usuario').fill('admin1');
-		await page.getByLabel('Contraseña').fill('clave-incorrecta');
+		await page.getByLabel('Contraseña', { exact: true }).fill('clave-incorrecta');
 		await page.getByRole('button', { name: 'Ingresar' }).click();
 
 		await expect(page.getByRole('alert')).toBeVisible();
 		await expect(page).toHaveURL(/\/login/);
+	});
+
+	test('permite mostrar y ocultar la contraseña', async ({ page }) => {
+		await page.goto('/login');
+		const password = page.getByLabel('Contraseña', { exact: true });
+
+		await expect(password).toHaveAttribute('type', 'password');
+		await page.getByRole('button', { name: 'Mostrar contraseña' }).click();
+		await expect(password).toHaveAttribute('type', 'text');
+		await page.getByRole('button', { name: 'Ocultar contraseña' }).click();
+		await expect(password).toHaveAttribute('type', 'password');
 	});
 });
