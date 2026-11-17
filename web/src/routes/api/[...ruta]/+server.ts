@@ -4,6 +4,9 @@ import type { RequestHandler } from './$types';
 
 const BACKEND = env.API_URL ?? 'http://localhost:8080';
 
+// Menor que el timeout del navegador (10 s) para poder devolver un error claro.
+const TIMEOUT_API_MS = 8_000;
+
 const ACCESS = 'kc_access';
 const REFRESH = 'kc_refresh';
 const USER = 'kc_user';
@@ -17,6 +20,20 @@ interface RespuestaLogin {
 }
 
 type Cookies = import('@sveltejs/kit').Cookies;
+
+async function pedirApi(url: string, init: RequestInit): Promise<Response> {
+	return fetch(url, { ...init, signal: AbortSignal.timeout(TIMEOUT_API_MS) });
+}
+
+function respuestaDeRed(error: unknown): Response {
+	if (error instanceof DOMException && error.name === 'TimeoutError') {
+		return json(
+			{ title: 'La API tardó demasiado en responder. Inténtalo de nuevo.' },
+			{ status: 504 }
+		);
+	}
+	return json({ title: 'No se pudo conectar con la API.' }, { status: 502 });
+}
 
 /**
  * `Secure` solo con HTTPS: los navegadores descartan cookies Secure servidas
@@ -81,21 +98,35 @@ export const fallback: RequestHandler = async ({ params, request, cookies, url }
 
 	const esLogin = ruta === 'v1/auth/login' || ruta === 'v1/auth/refresh';
 
-	let respuesta = await fetch(destino, { method, headers, body: cuerpo });
+	let respuesta: Response;
+	try {
+		respuesta = await pedirApi(destino, { method, headers, body: cuerpo });
+	} catch (error) {
+		return respuestaDeRed(error);
+	}
 
 	// Renovación transparente: si el access token expiró, se usa el refresh.
 	if (respuesta.status === 401 && !esLogin && cookies.get(REFRESH)) {
-		const refresco = await fetch(`${BACKEND}/api/v1/auth/refresh`, {
-			method: 'POST',
-			headers: { 'content-type': 'application/json' },
-			body: JSON.stringify({ refreshToken: cookies.get(REFRESH) })
-		});
+		let refresco: Response;
+		try {
+			refresco = await pedirApi(`${BACKEND}/api/v1/auth/refresh`, {
+				method: 'POST',
+				headers: { 'content-type': 'application/json' },
+				body: JSON.stringify({ refreshToken: cookies.get(REFRESH) })
+			});
+		} catch (error) {
+			return respuestaDeRed(error);
+		}
 
 		if (refresco.ok) {
 			const datos = (await refresco.json()) as RespuestaLogin;
 			guardarSesion(cookies, datos, secure);
 			headers.set('authorization', `Bearer ${datos.accessToken}`);
-			respuesta = await fetch(destino, { method, headers, body: cuerpo });
+			try {
+				respuesta = await pedirApi(destino, { method, headers, body: cuerpo });
+			} catch (error) {
+				return respuestaDeRed(error);
+			}
 		} else {
 			borrarSesion(cookies, secure);
 		}
